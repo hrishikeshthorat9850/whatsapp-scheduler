@@ -2,12 +2,12 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 ## Warning : To run this code you need .env file that should contain below values . Also check where is your redis running. 
-
+```
 REDIS_URL=
 TWILIO_WHATSAPP=
 TWILIO_SID=
 TWILIO_AUTH_TOKEN=
-
+```
 First, run the development server:
 
 ```bash
