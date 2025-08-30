@@ -1,103 +1,133 @@
-import Image from "next/image";
+"use client";
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [contacts, setContacts] = useState([]);
+  const [newNumber, setNewNumber] = useState("");
+  const [selectedNumbers, setSelectedNumbers] = useState([]);
+  const [message, setMessage] = useState("");
+  const [sendAt, setSendAt] = useState("");
+  const [jobs, setJobs] = useState([]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Add number
+  const addNumber = () => {
+    if (!newNumber.trim() || contacts.includes(newNumber)) return;
+    setContacts([...contacts, "+91"+newNumber]);
+    setNewNumber("");
+  };
+
+  // Toggle select number
+  const toggleSelect = (number) => {
+    if (selectedNumbers.includes(number)) {
+      setSelectedNumbers(selectedNumbers.filter((n) => n !== number));
+    } else {
+      setSelectedNumbers([...selectedNumbers, number]);
+    }
+  };
+
+  // Schedule message
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (selectedNumbers.length === 0) return alert("Select at least one number");
+
+    const res = await fetch("/api/schedule", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ numbers: selectedNumbers, message, sendAt }),
+    });
+    const data = await res.json();
+    alert(JSON.stringify(data, null, 2));
+    fetchJobs(); // refresh job list
+  };
+
+  // Fetch scheduled jobs from API
+  const fetchJobs = async () => {
+    const res = await fetch("/api/jobs");
+    const data = await res.json();
+    if (data.jobs) setJobs(data.jobs);
+  };
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center min-h-screen bg-gray-900 text-white p-6">
+      <h1 className="text-3xl font-bold mb-6">📱 WhatsApp Scheduler</h1>
+
+      {/* Add Number Section */}
+      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md mb-6">
+        <h2 className="text-xl font-semibold mb-4">Add Numbers</h2>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="Enter number (+91...)"
+            value={newNumber}
+            onChange={(e) => setNewNumber(e.target.value)}
+            className="flex-1 px-3 py-2 rounded bg-gray-700 border border-gray-600"
+          />
+          <button onClick={addNumber} className="bg-blue-500 px-4 py-2 rounded hover:bg-blue-600">
+            Add
+          </button>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <ul className="mt-4 space-y-2">
+          {contacts.map((num) => (
+            <li key={num} className="flex items-center gap-2">
+              <input type="checkbox" checked={selectedNumbers.includes(num)} onChange={() => toggleSelect(num)} />
+              <span>{num}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      {/* Schedule Message Section */}
+      <form onSubmit={handleSubmit} className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md space-y-4 mb-6">
+        <h2 className="text-xl font-semibold mb-4">Schedule Message</h2>
+        <textarea
+          placeholder="Enter your message"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          className="w-full px-3 py-2 rounded bg-gray-700 border border-gray-600"
+        />
+        <input
+          type="datetime-local"
+          value={sendAt}
+          onChange={(e) => setSendAt(e.target.value)}
+          className="w-full px-3 py-2 rounded bg-gray-700 border border-gray-600"
+        />
+        <button type="submit" className="w-full bg-green-500 py-2 rounded hover:bg-green-600">
+          Schedule Message
+        </button>
+      </form>
+
+      {/* Scheduled Jobs Table */}
+      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-3xl">
+        <h2 className="text-xl font-semibold mb-4">Scheduled Messages</h2>
+        {jobs.length === 0 ? (
+          <p>No scheduled messages</p>
+        ) : (
+          <table className="w-full table-auto border-collapse border border-gray-700">
+            <thead>
+              <tr className="bg-gray-700">
+                <th className="border border-gray-600 px-3 py-1">#</th>
+                <th className="border border-gray-600 px-3 py-1">Numbers</th>
+                <th className="border border-gray-600 px-3 py-1">Message</th>
+                <th className="border border-gray-600 px-3 py-1">Scheduled At</th>
+              </tr>
+            </thead>
+            <tbody>
+              {jobs.map((job, idx) => (
+                <tr key={job.id} className="odd:bg-gray-700 even:bg-gray-600">
+                  <td className="border border-gray-600 px-3 py-1">{idx + 1}</td>
+                  <td className="border border-gray-600 px-3 py-1">{job.numbers.join(", ")}</td>
+                  <td className="border border-gray-600 px-3 py-1">{job.message}</td>
+                  <td className="border border-gray-600 px-3 py-1">{job.timestamp}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }
